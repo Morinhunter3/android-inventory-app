@@ -17,7 +17,8 @@ public class AddEditItemActivity extends AppCompatActivity {
     private DatabaseHelper db;
 
     private TextView textTitle;
-    private EditText editItemName, editItemQty;
+    private EditText editItemName;
+    private EditText editItemQty;
     private Button buttonSave, buttonDelete;
 
     private long editingItemId = -1;
@@ -68,10 +69,6 @@ public class AddEditItemActivity extends AppCompatActivity {
         String name = editItemName.getText().toString().trim();
         String qtyText = editItemQty.getText().toString().trim();
 
-        if (name.isEmpty() || qtyText.isEmpty()) {
-            Toast.makeText(this, "Enter item name and quantity.", Toast.LENGTH_SHORT).show();
-            return;
-        }
 
         int qty;
         try {
@@ -91,8 +88,11 @@ public class AddEditItemActivity extends AppCompatActivity {
             return;
         }
 
+        String category = "General";
+        int minimumStock = 10;
+
         if (editingItemId == -1) {
-            long id = db.addItem(name, qty);
+            long id = db.addItem(name, qty, category, minimumStock);
             if (id != -1) {
 
 
@@ -108,7 +108,7 @@ public class AddEditItemActivity extends AppCompatActivity {
 
 
         } else {
-            boolean updated = db.updateItem(editingItemId, name, qty);
+            boolean updated = db.updateItem(editingItemId, name, qty, category, minimumStock);
             if (updated) {
 
 

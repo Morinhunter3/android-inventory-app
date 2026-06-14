@@ -15,12 +15,16 @@ public class InventoryService {
         return db.getAllItems();
     }
 
-    public long addItem(String name, int quantity) {
-        return db.addItem(name, quantity);
+    public long addItem(String name, int quantity, String category, int minimumStock) {
+        return db.addItem(name, quantity, category, minimumStock);
     }
 
-    public boolean updateItem(long id, String name, int quantity) {
-        return db.updateItem(id, name, quantity);
+    public boolean updateItem(long id, String name, int quantity, String category, int minimumStock) {
+        return db.updateItem(id, name, quantity, category, minimumStock);
+    }
+
+    public Cursor searchItems(String searchText, String filterMode) {
+        return db.searchItems(searchText, filterMode);
     }
 
     public boolean deleteItem(long id) {

@@ -50,6 +50,7 @@ public class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.Inve
 
         holder.textItemStatus.setText(status);
 
+
         holder.itemView.setOnClickListener(v -> listener.onItemClicked(item));
         holder.buttonDeleteItem.setOnClickListener(v -> listener.onDeleteClicked(item));
     }
@@ -59,7 +60,7 @@ public class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.Inve
         return items.size();
     }
 
-    static class InventoryViewHolder extends RecyclerView.ViewHolder {
+    public static class InventoryViewHolder extends RecyclerView.ViewHolder {
 
         TextView textItemName, textItemQty, textItemStatus;
         Button buttonDeleteItem;

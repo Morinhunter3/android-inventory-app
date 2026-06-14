@@ -22,7 +22,7 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements InventoryAdapter.InventoryListener {
 
-    private InventoryService InventoryService;
+    private InventoryService inventoryService;
 
     private RecyclerView recyclerInventory;
     private FloatingActionButton fabAddItem;
@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements InventoryAdapter.
             });
         }
 
-        InventoryService = new InventoryService(this);
+        inventoryService = new InventoryService(this);
 
         recyclerInventory = findViewById(R.id.recyclerInventory);
         fabAddItem = findViewById(R.id.fabAddItem);
@@ -140,52 +140,39 @@ public class MainActivity extends AppCompatActivity implements InventoryAdapter.
 
         String searchText = editSearch.getText().toString().trim().toLowerCase();
 
-        Cursor cursor = InventoryService.getAllItems();
+        Cursor cursor = inventoryService.searchItems(searchText, filterMode.name());
+
         if (cursor != null) {
             while (cursor.moveToNext()) {
                 long id = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ITEM_ID));
                 String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ITEM_NAME));
                 int qty = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ITEM_QTY));
 
-                // Search filter
-                if (!searchText.isEmpty() && !name.toLowerCase().contains(searchText)) {
-                    continue;
-                }
+                String category = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ITEM_CATEGORY));
+                int minimumStock = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ITEM_MIN_STOCK));
+                String lastUpdated = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ITEM_LAST_UPDATED));
 
-                // Stock filters
-                if (filterMode == FilterMode.LOW && !(qty > 0 && qty <= 10)) continue;
-                if (filterMode == FilterMode.OUT && qty != 0) continue;
-
-                InventoryItem item = new InventoryItem(id, name, qty);
+                InventoryItem item = new InventoryItem(id, name, qty, category, minimumStock, lastUpdated);
 
                 itemList.add(item);
                 inventoryMap.put(id, item);
             }
+
             cursor.close();
         }
 
-        if (itemList.isEmpty()) {
-            Toast.makeText(
-                    this,
-                    "No inventory items found.",
-                    Toast.LENGTH_SHORT
-            ).show();
-        }
         if (sortMode == SortMode.NAME) {
-
-            itemList.sort((a, b) ->
-                    a.name.compareToIgnoreCase(b.name));
-
+            itemList.sort((a, b) -> a.name.compareToIgnoreCase(b.name));
         } else if (sortMode == SortMode.QTY_LOW_HIGH) {
-
-            itemList.sort((a, b) ->
-                    Integer.compare(a.quantity, b.quantity));
-
+            itemList.sort((a, b) -> Integer.compare(a.quantity, b.quantity));
         } else if (sortMode == SortMode.QTY_HIGH_LOW) {
-
-            itemList.sort((a, b) ->
-                    Integer.compare(b.quantity, a.quantity));
+            itemList.sort((a, b) -> Integer.compare(b.quantity, a.quantity));
         }
+
+        if (itemList.isEmpty()) {
+            Toast.makeText(this, "No inventory items found.", Toast.LENGTH_SHORT).show();
+        }
+
         adapter.notifyDataSetChanged();
     }
 
@@ -210,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements InventoryAdapter.
                 .setMessage("Are you sure you want to delete " + item.name + "?")
                 .setPositiveButton("Delete", (dialog, which) -> {
 
-                    boolean deleted = InventoryService.deleteItem(item.id);
+                    boolean deleted = inventoryService.deleteItem(item.id);
 
                     if (deleted) {
                         Toast.makeText(this,
